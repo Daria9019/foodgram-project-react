@@ -1,0 +1,5 @@
+Django==3.2
+djangorestframework
+djoser
+drf-base64
+Pillow==9.3.0
