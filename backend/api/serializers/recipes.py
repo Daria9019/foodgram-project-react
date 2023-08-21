@@ -10,9 +10,8 @@ from rest_framework.exceptions import ValidationError
 
 
 class Base64ImageField(serializers.ImageField):
-    """
-    Convert ing to base64
-    """
+    """Convert ing to base64."""
+
     def to_internal_value(self, data):
         if isinstance(data, str) and data.startswith('data:image'):
             format, imgstr = data.split(';base64,')
@@ -23,28 +22,24 @@ class Base64ImageField(serializers.ImageField):
 
 
 class TagSerializer(serializers.ModelSerializer):
-    """
-    Tag serialize
-    """
+    """Tag serialize."""
+
     class Meta:
         model = Tag
-        fields = '__all__'
-        read_only_fields = ('__all__',)
+        fields = ('id', 'name', 'color', 'slug')
 
 
 class IngredientSerializer(serializers.ModelSerializer):
-    """
-    Ingredient Serializer
-    """
+    """Ingredient Serializer."""
+
     class Meta:
         model = Ingredient
         fields = ('id', 'name', 'measurement_unit')
 
 
 class RecipeIngredientSerializer(serializers.ModelSerializer):
-    """
-    Recipe Serializer
-    """
+    """Recipe Serializer."""
+
     name = serializers.CharField(
         source='ingredient.name', read_only=True)
     id = serializers.PrimaryKeyRelatedField(
@@ -58,9 +53,8 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
 
 
 class AddIngredientSerializer(serializers.ModelSerializer):
-    """
-    Add Ingredient Serializer
-    """
+    """Add Ingredient Serializer."""
+
     id = serializers.PrimaryKeyRelatedField(
         queryset=Ingredient.objects.all(),
         source='ingredient')
@@ -71,9 +65,8 @@ class AddIngredientSerializer(serializers.ModelSerializer):
 
 
 class RecipeSerializer(serializers.ModelSerializer):
-    """
-    Recipe Serializer
-    """
+    """Recipe Serializer."""
+
     author = UsersSerializer(read_only=True)
     image = Base64ImageField()
     ingredients = AddIngredientSerializer(many=True)
@@ -132,9 +125,8 @@ class RecipeSerializer(serializers.ModelSerializer):
 
 
 class GetRecipeSerializer(serializers.ModelSerializer):
-    """
-    Recipe View Serializer
-    """
+    """Recipe View Serializer."""
+
     tags = TagSerializer(many=True)
     author = UsersSerializer(read_only=True)
     ingredients = RecipeIngredientSerializer(read_only=True, many=True,
@@ -162,9 +154,8 @@ class GetRecipeSerializer(serializers.ModelSerializer):
 
 
 class FavoriteSerializer(serializers.ModelSerializer):
-    """
-    Favorite Serializer
-    """
+    """Favorite Serializer."""
+
     class Meta:
         model = Favorite
         fields = ('user', 'recipe')
@@ -183,17 +174,15 @@ class FavoriteSerializer(serializers.ModelSerializer):
 
 
 class ShoppingCartSerializer(FavoriteSerializer):
-    """
-    Cart Serializer
-    """
+    """Cart Serializer."""
+
     class Meta(FavoriteSerializer.Meta):
         model = ShoppingCart
 
 
 class RecipeInfoSerializer(serializers.ModelSerializer):
-    """
-    Info Serializer
-    """
+    """Info Serializer."""
+
     class Meta:
         model = Recipe
         fields = ('id', 'name', 'image', 'cooking_time')

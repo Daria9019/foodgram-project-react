@@ -31,6 +31,13 @@ class User(AbstractUser):
             )
         ]
 
+    def validate_username(self, value):
+        """Validates the username."""
+
+        if value == "me":
+            raise ValidationError('Error creating user with this name')
+        return value
+
     def __str__(self):
         return self.username
 
@@ -49,14 +56,6 @@ class Follow(models.Model):
         on_delete=models.CASCADE
     )
 
-    def __str__(self):
-        return f'Author: {self.author}, following: {self.user}'
-
-    def save(self, **kwargs):
-        if self.user == self.author:
-            raise ValidationError("Error following by yourself")
-        super().save()
-
     class Meta:
         verbose_name = 'Subscription'
         verbose_name_plural = 'Subscriptions'
@@ -65,3 +64,11 @@ class Follow(models.Model):
                 fields=['author', 'user'],
                 name='unique_follower')
         ]
+
+    def __str__(self):
+        return f'Author: {self.author}, following: {self.user}'
+
+    def save(self, **kwargs):
+        if self.user == self.author:
+            raise ValidationError('Error following by yourself')
+        super().save()

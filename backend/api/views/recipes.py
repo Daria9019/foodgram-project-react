@@ -29,9 +29,7 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
-    """
-    Tag view
-    """
+    """Tag view."""
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     permission_classes = (AllowAny,)
@@ -39,10 +37,12 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
-    """
-    Recipe view
-    """
-    queryset = Recipe.objects.all()
+    """Recipe view."""
+
+    queryset = (Recipe.objects
+                .select_related('author')
+                .prefetch_related('tags', 'ingredients')
+                .all())
     serializer_class = RecipeSerializer
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
@@ -66,9 +66,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         if self.request.method == 'DELETE':
-            if object.exists():
-                object.delete()
+            if Recipe.objects.filter(user=user, recipe=recipe).delete():
                 return Response(status=status.HTTP_204_NO_CONTENT)
+            # if object.exists():
+            #     object.delete()
+            #     return Response(status=status.HTTP_204_NO_CONTENT)
             return Response({'error': 'Recipe not in list'},
                             status=status.HTTP_400_BAD_REQUEST)
 
@@ -86,13 +88,19 @@ class RecipeViewSet(viewsets.ModelViewSet):
         response['Content-Disposition'] = (
             "attachment; filename='shopping_cart.pdf'"
         )
-        p = canvas.Canvas(response)
+
+        self.make_pdf(response, request.user)
+
+        return response
+
+    def make_pdf(self, response, request_user):
+        pdf_canvas = canvas.Canvas(response)
         arial = ttfonts.TTFont('Arial', 'data/arial.ttf')
         pdfmetrics.registerFont(arial)
-        p.setFont('Arial', 14)
+        pdf_canvas.setFont('Arial', 14)
 
         ingredients = RecipeIngredient.objects.filter(
-            recipe__shopping_cart__user=request.user).values_list(
+            recipe__shopping_cart__user=request_user).values_list(
             'ingredient__name', 'amount', 'ingredient__measurement_unit')
 
         ingr_list = {}
@@ -103,12 +111,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 ingr_list[name]['amount'] += amount
         height = 700
 
-        p.drawString(100, 750, 'Shoping list')
+        pdf_canvas.drawString(100, 750, 'Shoping list')
         for i, (name, data) in enumerate(ingr_list.items(), start=1):
-            p.drawString(
+            pdf_canvas.drawString(
                 80, height,
                 f"{i}. {name} – {data['amount']} {data['unit']}")
             height -= 25
-        p.showPage()
-        p.save()
-        return response
+        pdf_canvas.showPage()
+        pdf_canvas.save()
