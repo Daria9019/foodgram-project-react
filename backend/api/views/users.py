@@ -12,11 +12,6 @@ from users.models import Follow, User
 
 class UsersViewSet(UserViewSet):
     """Users view."""
-<<<<<<< HEAD
-
-=======
-    
->>>>>>> b2a89b8b689297cf776e78c32073344815784955
     queryset = User.objects.all()
     serializer_class = UsersSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
