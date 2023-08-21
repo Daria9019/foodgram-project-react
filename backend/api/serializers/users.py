@@ -15,10 +15,10 @@ class UsersCreateSerializer(UserCreateSerializer):
             'last_name',
             'password')
 
-        extra_kwargs = {"password": {"write_only": True}}
+        extra_kwargs = {'password': {'write_only': True}}
 
     def validate_username(self, value):
-        if value == "me":
+        if value == 'me':
             raise ValidationError(
                 'Error creating user by this name'
             )
@@ -47,8 +47,9 @@ class UsersSerializer(UserSerializer):
 
 
 class FollowSerializer(UsersSerializer):
-    recipes = SerializerMethodField(read_only=True)
     recipes_count = SerializerMethodField(read_only=True)
+
+    recipes = SerializerMethodField(read_only=True)
 
     class Meta(UsersSerializer.Meta):
         fields = UsersSerializer.Meta.fields + ('recipes', 'recipes_count')
@@ -63,6 +64,3 @@ class FollowSerializer(UsersSerializer):
         if recipe_limit:
             queryset = queryset[:int(recipe_limit)]
         return RecipeInfoSerializer(queryset, context=context, many=True).data
-
-    def get_recipes_count(self, object):
-        return object.recipes.count()

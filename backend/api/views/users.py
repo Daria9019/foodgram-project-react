@@ -11,9 +11,8 @@ from users.models import Follow, User
 
 
 class UsersViewSet(UserViewSet):
-    """
-    Users view
-    """
+    """Users view."""
+
     queryset = User.objects.all()
     serializer_class = UsersSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
@@ -45,9 +44,11 @@ class UsersViewSet(UserViewSet):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         if request.method == 'DELETE':
-            if subscription.exists():
-                subscription.delete()
+            if Follow.objects.filter(user=user, author=author).delete():
                 return Response(status=status.HTTP_204_NO_CONTENT)
+            # if subscription.exists():
+            #     subscription.delete()
+            #     return Response(status=status.HTTP_204_NO_CONTENT)
             return Response({'error': 'You dont have subscription'},
                             status=status.HTTP_400_BAD_REQUEST)
 

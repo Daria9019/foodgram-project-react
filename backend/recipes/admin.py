@@ -34,6 +34,10 @@ class RecipeAdmin(ModelAdmin):
         return obj.favorite.count()
     favorite.short_description = 'In favs'
 
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related(
+            'author').prefetch_related('tags', 'ingredients')
+
 
 @register(RecipeIngredient)
 class RecipeIngredientAdmin(ModelAdmin):
