@@ -9,4 +9,4 @@
                       python manage.py migrate
 - запустите контейнеры: docker-compose up
 - запустите сервер: python manage.py runserver
->>>>>>> b2a89b8b689297cf776e78c32073344815784955
+
