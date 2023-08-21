@@ -64,3 +64,7 @@ class FollowSerializer(UsersSerializer):
         if recipe_limit:
             queryset = queryset[:int(recipe_limit)]
         return RecipeInfoSerializer(queryset, context=context, many=True).data
+<<<<<<< HEAD
+=======
+
+>>>>>>> b2a89b8b689297cf776e78c32073344815784955

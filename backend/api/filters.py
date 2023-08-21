@@ -5,7 +5,6 @@ from recipes.models import Ingredient, Recipe
 
 class IngredientFilter(FilterSet):
     """Filter ingredient by name."""
-
     name = filters.CharFilter(method='filter_by_name')
 
     class Meta:
