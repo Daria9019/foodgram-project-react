@@ -9,11 +9,11 @@ User = get_user_model()
 class Ingredient(models.Model):
     name = models.CharField(
         verbose_name='Ingredient',
-        max_length=100
+        max_length=200
     )
     measurement_unit = models.CharField(
         verbose_name='Mesure',
-        max_length=15
+        max_length=200
     )
 
     class Meta:
@@ -27,15 +27,15 @@ class Ingredient(models.Model):
 class Tag(models.Model):
     name = models.CharField(
         verbose_name='Name',
-        max_length=16,
+        max_length=200,
         unique=True
     )
     color = models.CharField(
-        max_length=16,
+        max_length=7,
         verbose_name='Color'
     )
     slug = models.SlugField(
-        max_length=16,
+        max_length=100,
         verbose_name='Slug',
         unique=True
     )
