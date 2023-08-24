@@ -22,9 +22,7 @@ from .paginations import LimitPagination
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
-    """
-    Ingredient view
-    """
+    """Ingredient view."""
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     filter_backends = (IngredientFilter,)
@@ -126,6 +124,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
 
 class CustomUserViewSet(UserViewSet):
+    """User viewset"""
     queryset = CustomUser.objects.all()
     serializer_class = CustomUserSerializer
     permission_classes = (IsAuthenticated,)
