@@ -13,6 +13,8 @@ from users.models import Follow, CustomUser
 
 
 class CustomUserCreateSerializer(UserCreateSerializer):
+    """CustomUser serializer."""
+    
     class Meta:
         model = CustomUser
         fields = (
@@ -73,6 +75,7 @@ class ChangePasswordSerializer(serializers.ModelSerializer):
 
 
 class FollowSerializer(serializers.ModelSerializer):
+    """Follow serializer."""
     is_subscribed = serializers.SerializerMethodField(read_only=True)
     recipes = serializers.SerializerMethodField(read_only=True)
     recipes_count = serializers.SerializerMethodField(read_only=True)
