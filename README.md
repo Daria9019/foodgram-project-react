@@ -8,5 +8,7 @@
 - примените миграции: python manage.py makemigrations
                       python manage.py migrate
 - запустите контейнеры: docker-compose up
-- запустите сервер: python manage.py runserver
+- в новом окне терминала выполните команды:
+   - docker compose exec backend python manage.py migrate
+   - docker compose exec backend python manage.py migrate
 
