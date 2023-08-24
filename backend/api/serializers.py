@@ -14,7 +14,7 @@ from users.models import Follow, CustomUser
 
 class CustomUserCreateSerializer(UserCreateSerializer):
     """CustomUser serializer."""
-    
+
     class Meta:
         model = CustomUser
         fields = (
