@@ -1,42 +1,31 @@
 import os
+from pathlib import Path
 
 from dotenv import load_dotenv
 
-load_dotenv()
+BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BASE_DIR.joinpath('.env'), override=True)
 
+SECRET_KEY = os.getenv("SECRET_KEY")
 
-def get_list_allowed(allowed: str) -> list:
-    return [host.strip() for host in allowed.split(',') if host.strip()]
+DEBUG = os.getenv('DEBUG')
 
-
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-SECRET_KEY = os.getenv('SECRET_KEY', default='your_secret_key')
-
-DEBUG = os.getenv('DEBUG', 'false').lower() in ['1', 'true']
-
-ALLOWED_HOSTS = get_list_allowed(
-    os.getenv('ALLOWED_HOSTS', default='127.0.0.1')
-)
-
-# Application definition
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS").split(' ')
 
 INSTALLED_APPS = [
+    'users.apps.UsersConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
-    'django_filters',
-    'rest_framework',
     'rest_framework.authtoken',
+    'rest_framework',
+    'django_filters',
     'djoser',
-
     'recipes.apps.RecipesConfig',
-    'users.apps.UsersConfig',
-    'api.apps.ApiConfig'
+    'api.apps.ApiConfig',
 ]
 
 MIDDLEWARE = [
@@ -69,23 +58,18 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'foodgram.wsgi.application'
 
-
-# Database
-# https://docs.djangoproject.com/en/2.2/ref/settings/#databases
-
 DATABASES = {
     'default': {
-        'ENGINE': os.getenv('DB_ENGINE', default='django.db.backends.postgresql'),
-        'NAME': os.getenv('DB_NAME', default='postgres'),
-        'USER': os.getenv('POSTGRES_USER', default='postgres'),
-        'PASSWORD': os.getenv('POSTGRES_PASSWORD', default='Admin'),
-        'PORT': os.getenv('DB_PORT', default='5432')
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('POSTGRES_DB', 'django'),
+        'USER': os.getenv('POSTGRES_USER', 'django'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD', ''),
+        'HOST': os.getenv('DB_HOST', ''),
+        'PORT': os.getenv('DB_PORT', 5432)
     }
+
+
 }
-
-
-# Password validation
-# https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -102,12 +86,10 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.AllowAny",
     ],
-
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
     ],
@@ -115,13 +97,21 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 6,
 }
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DJOSER = {
+    'LOGIN_FIELD': 'email',
+    'HIDE_USERS': False,
+    'SERIALIZERS': {
+        'user_create': 'api.serializers.CustomUserCreateSerializer',
+        'user': 'api.serializers.CustomUserSerializer',
+        'current_user': 'api.serializers.CustomUserSerializer',
+    },
+    'PERMISSIONS': {
+        'user_list': ['rest_framework.permissions.AllowAny'],
+        'user': ['rest_framework.permissions.IsAuthenticated'],
+    },
+}
 
-
-AUTH_USER_MODEL = 'users.User'
-
-# Internationalization
-# https://docs.djangoproject.com/en/2.2/topics/i18n/
+AUTH_USER_MODEL = 'users.CustomUser'
 
 LANGUAGE_CODE = 'ru-ru'
 
@@ -129,32 +119,14 @@ TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
-USE_L10N = True
-
 USE_TZ = True
 
+STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/2.2/howto/static-files/
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-STATIC_URL = '/back_static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'back_static/')
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-MEDIA_URL = '/back_media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'back_media/')
-
-# djoser settings
-
-DJOSER = {
-    'HIDE_USERS': False,
-    "LOGIN_FIELD": "email",
-    'PERMISSIONS': {
-        'user_list': ['rest_framework.permissions.AllowAny'],
-        'user': ['djoser.permissions.CurrentUserOrAdminOrReadOnly']
-    },
-    "SERIALIZERS": {
-        "user_create": "api.serializers.users.UsersCreateSerializer",
-        "user": "api.serializers.users.UsersSerializer",
-        "current_user": "api.serializers.users.UsersSerializer",
-    },
-}
+IMAGE_UPLOAD_PATH = 'recipes/images/'

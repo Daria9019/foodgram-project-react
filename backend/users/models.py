@@ -1,27 +1,48 @@
 from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.db import models
+from django.utils.translation import gettext_lazy as _
+
+from recipes.constants import NAME_MAX_LENGTH, EMAIL_MAX_LENGTH
 from rest_framework.exceptions import ValidationError
 
 
-class User(AbstractUser):
-    email = models.EmailField(
-        verbose_name='email',
+class CustomUser(AbstractUser):
+    email = models.EmailField(_('email'),
+                              max_length=EMAIL_MAX_LENGTH, unique=True)
+    username = models.CharField(
+        verbose_name='username',
+        max_length=NAME_MAX_LENGTH,
         unique=True,
-        max_length=254
+        validators=(UnicodeUsernameValidator(), ),
     )
     first_name = models.CharField(
         verbose_name='Name',
-        max_length=150,
+        max_length=NAME_MAX_LENGTH,
     )
     last_name = models.CharField(
-        verbose_name='Second name',
-        max_length=150,
+        verbose_name='Last Name',
+        max_length=NAME_MAX_LENGTH,
     )
-
+    password = models.CharField(
+        verbose_name='Password',
+        max_length=NAME_MAX_LENGTH,
+    )
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ('username', 'first_name', 'last_name')
+    REQUIRED_FIELDS = (
+        'username',
+        'first_name',
+        'last_name'
+    )
+    USER = 'user'
+    ADMIN = 'admin'
+    ROLES_CHOICES = [
+        (USER, 'user'),
+        (ADMIN, 'admin'),
+    ]
 
     class Meta:
+        ordering = ['username']
         verbose_name = 'User'
         verbose_name_plural = 'Users'
         constraints = [
@@ -43,32 +64,23 @@ class User(AbstractUser):
 
 
 class Follow(models.Model):
-    user = models.ForeignKey(
-        User,
-        related_name='follower',
-        verbose_name='Foloower',
-        on_delete=models.CASCADE
-    )
-    author = models.ForeignKey(
-        User,
-        related_name='following',
-        verbose_name='Author',
-        on_delete=models.CASCADE
-    )
+    follower = models.ForeignKey(
+        CustomUser, on_delete=models.CASCADE, related_name='follower',
+        verbose_name='Подписчик')
+    following = models.ForeignKey(
+        CustomUser, on_delete=models.CASCADE, related_name='following',
+        verbose_name='Автор')
 
     class Meta:
+        ordering = ['follower']
         verbose_name = 'Subscription'
         verbose_name_plural = 'Subscriptions'
         constraints = [
             models.UniqueConstraint(
-                fields=['author', 'user'],
-                name='unique_follower')
+                fields=['follower', 'following'],
+                name='unique_follow',
+            )
         ]
 
     def __str__(self):
-        return f'Author: {self.author}, following: {self.user}'
-
-    def save(self, **kwargs):
-        if self.user == self.author:
-            raise ValidationError('Error following by yourself')
-        super().save()
+        return f'Author: {self.following}, follower: {self.follower}'
