@@ -8,6 +8,7 @@ from django.conf import settings
 
 
 class Ingredient(models.Model):
+    """Ingredient model."""
     name = models.CharField(max_length=NAME_MAX_LENGTH,
                             verbose_name='Ingredient')
     measurement_unit = models.CharField(max_length=NAME_MAX_LENGTH,
@@ -29,6 +30,7 @@ class Ingredient(models.Model):
 
 
 class Tag(models.Model):
+    """Tag model."""
     name = models.CharField(max_length=NAME_MAX_LENGTH, verbose_name='Name',
                             unique=True)
     color = models.CharField(max_length=COLOR_MAX_LENGTH, unique=True,
@@ -36,15 +38,16 @@ class Tag(models.Model):
     slug = models.SlugField(unique=True, max_length=NAME_MAX_LENGTH)
 
     class Meta:
-        verbose_name = "Tag"
-        verbose_name_plural = "Tags"
+        verbose_name = 'Tag'
+        verbose_name_plural = 'Tags'
         ordering = ['name']
 
     def __str__(self):
-        return f"{self.name} (цвет: {self.color})"
+        return f'{self.name} (цвет: {self.color})'
 
 
 class Recipe(models.Model):
+    """Recipe model."""
     ingredients = models.ManyToManyField(
         Ingredient, through='RecipeIngredient',
         through_fields=('recipe', 'ingredient'),
@@ -90,6 +93,7 @@ class Recipe(models.Model):
 
 
 class RecipeIngredient(models.Model):
+    """RecipeIngredient model."""
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE,
                                related_name='recipe_ingredient',
                                verbose_name='Recipe')
@@ -115,10 +119,11 @@ class RecipeIngredient(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.amount} {self.ingredient}"
+        return f'{self.amount} {self.ingredient}'
 
 
 class Favorite(models.Model):
+    """Favorite model."""
     user = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE,
@@ -145,6 +150,7 @@ class Favorite(models.Model):
 
 
 class ShoppingCart(models.Model):
+    """ShoppingCart model."""
     user = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE,
@@ -168,4 +174,3 @@ class ShoppingCart(models.Model):
 
     def __str__(self):
         return f'{self.recipe} in cart {self.user}!'
-

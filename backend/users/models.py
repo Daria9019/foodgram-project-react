@@ -8,6 +8,7 @@ from rest_framework.exceptions import ValidationError
 
 
 class CustomUser(AbstractUser):
+    """CustomUser model."""
     email = models.EmailField(_('email'),
                               max_length=EMAIL_MAX_LENGTH, unique=True)
     username = models.CharField(
@@ -55,7 +56,7 @@ class CustomUser(AbstractUser):
     def validate_username(self, value):
         """Validates the username."""
 
-        if value == "me":
+        if value == 'me':
             raise ValidationError('Error creating user with this name')
         return value
 
@@ -64,6 +65,7 @@ class CustomUser(AbstractUser):
 
 
 class Follow(models.Model):
+    """Follow model."""
     follower = models.ForeignKey(
         CustomUser, on_delete=models.CASCADE, related_name='follower',
         verbose_name='Подписчик')

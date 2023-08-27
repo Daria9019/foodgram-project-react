@@ -34,7 +34,6 @@ class RecipeFilter(FilterSet):
 
 class IngredientFilter(SearchFilter):
     """Filter ingredient by name."""
-
     search_param = 'name'
 
     class Meta:

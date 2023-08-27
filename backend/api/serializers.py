@@ -13,6 +13,7 @@ from users.models import Follow, CustomUser
 
 
 class CustomUserCreateSerializer(UserCreateSerializer):
+    """User сreate Serializer."""
     class Meta:
         model = CustomUser
         fields = (
@@ -35,6 +36,7 @@ class CustomUserCreateSerializer(UserCreateSerializer):
 
 
 class CustomUserSerializer(UserSerializer):
+    """User Serializer."""
     is_subscribed = serializers.SerializerMethodField()
 
     class Meta:
@@ -73,7 +75,7 @@ class ChangePasswordSerializer(serializers.ModelSerializer):
 
 
 class FollowSerializer(serializers.ModelSerializer):
-    """Follow serializer."""
+    """Follow сreate Serializer."""
     is_subscribed = serializers.SerializerMethodField(read_only=True)
     recipes = serializers.SerializerMethodField(read_only=True)
     recipes_count = serializers.SerializerMethodField(read_only=True)
@@ -92,7 +94,7 @@ class FollowSerializer(serializers.ModelSerializer):
             UniqueTogetherValidator(
                 queryset=Follow.objects.all(),
                 fields=('follower', 'following',),
-                message="You have already followed this author."
+                message='You have already followed this author.'
             ),
         )
 
@@ -143,7 +145,6 @@ class Base64ImageField(serializers.ImageField):
 
 class TagSerializer(serializers.ModelSerializer):
     """Tag serialize."""
-
     class Meta:
         model = Tag
         fields = (
@@ -156,7 +157,6 @@ class TagSerializer(serializers.ModelSerializer):
 
 class IngredientSerializer(serializers.ModelSerializer):
     """Ingredient Serializer."""
-    
     class Meta:
         model = Ingredient
         fields = (
@@ -222,8 +222,8 @@ class RecipeSerializer(serializers.ModelSerializer):
     def get_ingredients(self, recipe, ingredients):
         ingredient_list = [
             RecipeIngredient(
-                ingredient=ingredient_data.pop("id"),
-                amount=ingredient_data.pop("amount"),
+                ingredient=ingredient_data.pop('id'),
+                amount=ingredient_data.pop('amount'),
                 recipe=recipe,
             )
             for ingredient_data in ingredients
@@ -231,8 +231,8 @@ class RecipeSerializer(serializers.ModelSerializer):
         RecipeIngredient.objects.bulk_create(ingredient_list)
 
     def create(self, validated_data):
-        ingredients = validated_data.pop("ingredients")
-        tags_data = validated_data.pop("tags")
+        ingredients = validated_data.pop('ingredients')
+        tags_data = validated_data.pop('tags')
         recipe = Recipe.objects.create(**validated_data)
         recipe.tags.set(tags_data)
         self.get_ingredients(recipe, ingredients)
@@ -336,5 +336,5 @@ class RecipeInfoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recipe
-        fields = "id", "name", "image", "cooking_time"
-        read_only_fields = ("__all__",)
+        fields = 'id', 'name', 'image', 'cooking_time'
+        read_only_fields = ('__all__',)

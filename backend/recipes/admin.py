@@ -28,9 +28,17 @@ class RecipeAdmin(admin.ModelAdmin):
     list_filter = ['tags']
     inlines = (RecipeIngredientInline, )
 
+    def display_tags(self, obj):
+        return ', '.join([tag.name for tag in obj.tags.all()])
+    display_tags.short_description = 'Tags'
+
     @admin.display(description='В избранном')
     def favorites_number(self, obj):
         return Favorite.objects.filter(recipe=obj).count()
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related(
+            'author').prefetch_related('tags', 'ingredients')
 
 
 admin.site.register(ShoppingCart)

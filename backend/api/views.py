@@ -118,7 +118,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         response = HttpResponse(shopping,
                                 'Content-Type: application/pdf')
         response[
-            "Content-Disposition"
+            'Content-Disposition'
         ] = 'attachment; filename="shopping.pdf"'
         return response
 
