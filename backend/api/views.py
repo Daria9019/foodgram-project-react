@@ -124,11 +124,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
 
 class CustomUserViewSet(UserViewSet):
-<<<<<<< HEAD
     """User view."""
-=======
-    """User viewset"""
->>>>>>> 1305baaf4eafe828871de0475881e8a7cb52de72
     queryset = CustomUser.objects.all()
     serializer_class = CustomUserSerializer
     permission_classes = (IsAuthenticated,)

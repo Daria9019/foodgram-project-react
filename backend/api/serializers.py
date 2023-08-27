@@ -13,12 +13,7 @@ from users.models import Follow, CustomUser
 
 
 class CustomUserCreateSerializer(UserCreateSerializer):
-<<<<<<< HEAD
     """User сreate Serializer."""
-=======
-    """CustomUser serializer."""
-
->>>>>>> 1305baaf4eafe828871de0475881e8a7cb52de72
     class Meta:
         model = CustomUser
         fields = (
