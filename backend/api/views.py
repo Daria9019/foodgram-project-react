@@ -1,28 +1,31 @@
-from django.db.models import Sum
+from io import StringIO
+
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework import viewsets
-from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated, SAFE_METHODS, AllowAny
+from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
+                            ShoppingCart, Tag)
 
-from recipes.models import Tag, Recipe, Ingredient, \
-    RecipeIngredient, ShoppingCart, Favorite
-from users.models import Follow, CustomUser
-from .filters import RecipeFilter, IngredientFilter
-from .serializers import TagSerializer, GetRecipeSerializer, \
-    IngredientSerializer, RecipeInfoSerializer, \
-    RecipeSerializer, CustomUserSerializer, \
-    CustomUserCreateSerializer, FollowSerializer, ChangePasswordSerializer
-from .permissions import IsAuthorOrReadOnly
+from rest_framework import status, viewsets
+from rest_framework.decorators import action
+from rest_framework.permissions import SAFE_METHODS, AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from users.models import CustomUser, Follow
+
+from .filters import IngredientFilter, RecipeFilter
 from .paginations import LimitPagination
+from .permissions import IsAuthorOrReadOnly
+from .serializers import (ChangePasswordSerializer, CustomUserCreateSerializer,
+                          CustomUserSerializer, FollowSerializer,
+                          GetRecipeSerializer, IngredientSerializer,
+                          RecipeInfoSerializer, RecipeSerializer,
+                          TagSerializer)
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     """Ingredient view."""
+
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     filter_backends = (IngredientFilter,)
@@ -33,6 +36,7 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
     """Tag view."""
+
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     permission_classes = (AllowAny,)
@@ -41,6 +45,7 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
 
 class RecipeViewSet(viewsets.ModelViewSet):
     """Recipe view."""
+
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
     filter_backends = (DjangoFilterBackend,)
@@ -54,9 +59,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return RecipeSerializer
 
     def get_queryset(self):
-        recipes = Recipe.objects.prefetch_related(
-            'recipe_ingredient__ingredient', 'tags'
-        )
+        recipes = Recipe.objects.select_related(
+            'author').prefetch_related('tags', 'ingredients')
         return recipes
 
     def perform_create(self, serializer):
@@ -74,57 +78,63 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     def delete_obj(self, model, user, pk):
         obj = model.objects.filter(user=user, recipe__id=pk)
-        if obj.exists():
+        try:
             obj.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response({
-            'errors': 'You have already delete this recipe!'
-        }, status=status.HTTP_400_BAD_REQUEST)
+        except obj.DoesNotExist:
+            return Response({'errors': 'You '
+                                       'have already '
+                                       'delete this recipe!'
+                             },
+                            status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True, methods=['post', 'delete'],
             permission_classes=[IsAuthenticated])
     def favorite(self, request, pk=None):
-        if request.method == 'POST':
-            return self.get_obj(Favorite, request.user, pk)
-        else:
+        if request.method != 'POST':
             return self.delete_obj(Favorite, request.user, pk)
+        return self.get_obj(Favorite, request.user, pk)
 
     @action(detail=True, methods=['post', 'delete'],
             permission_classes=[IsAuthenticated])
     def shopping_cart(self, request, pk=None):
-        if request.method == 'POST':
-            return self.get_obj(ShoppingCart, request.user, pk)
-        else:
+        if request.method != 'POST':
             return self.delete_obj(ShoppingCart, request.user, pk)
+        return self.get_obj(ShoppingCart, request.user, pk)
 
-    @action(
-        detail=False,
-        permission_classes=[IsAuthenticated]
-    )
+    @action(detail=False)
     def download_shopping_cart(self, request):
-        ingredients = RecipeIngredient.objects.filter(
-            recipe__shopping_cart__user=request.user
-        ).values(
-            'ingredient__name',
-            'ingredient__measurement_unit'
-        ).annotate(quantity=Sum('amount'))
-        shopping = 'Shopping list\n'
-        shopping += '\n'.join([
-            f'- {ingredient["ingredient__name"]} '
-            f'({ingredient["ingredient__measurement_unit"]})'
-            f' - {ingredient["quantity"]}'
-            for ingredient in ingredients
-        ])
-        response = HttpResponse(shopping,
-                                'Content-Type: application/pdf')
-        response[
-            'Content-Disposition'
-        ] = 'attachment; filename="shopping.pdf"'
+        response = HttpResponse(content_type='text/plain')
+        response['Content-Disposition'] = (
+            'attachment; filename=shopping_cart.txt'
+        )
+
+        self.make_txt(response, request.user)
+
         return response
+
+    def make_txt(self, response, request_user):
+        file = StringIO()
+        file.write('Shopping list\n\n')
+
+        ingredients = RecipeIngredient.objects.filter(
+            recipe__shopping_cart__user=request_user).values_list(
+            'ingredient__name', 'amount', 'ingredient__measurement_unit')
+
+        ingr_list = {}
+        for name, amount, unit in ingredients:
+            if name not in ingr_list:
+                ingr_list[name] = {'amount': amount, 'unit': unit}
+            else:
+                ingr_list[name]['amount'] += amount
+        for i, (name, data) in enumerate(ingr_list.items(), start=1):
+            file.write(f"{i}. {name} – {data['amount']} {data['unit']}\n")
+        response.write(file.getvalue())
 
 
 class CustomUserViewSet(UserViewSet):
     """User view."""
+
     queryset = CustomUser.objects.all()
     serializer_class = CustomUserSerializer
     permission_classes = (IsAuthenticated,)

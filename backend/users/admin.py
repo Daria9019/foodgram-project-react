@@ -23,4 +23,5 @@ class FollowAdmin(admin.ModelAdmin):
     search_fields = ('follower',)
 
     def get_queryset(self, request):
-        return super().get_queryset(request).select_related('following')
+        return super(FollowAdmin, self).get_queryset(request).\
+            select_related('follower', 'following')

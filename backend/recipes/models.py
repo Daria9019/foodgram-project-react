@@ -1,14 +1,15 @@
+from django.conf import settings
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models import UniqueConstraint
-
 from users.models import CustomUser
-from .constants import NAME_MAX_LENGTH, COLOR_MAX_LENGTH
-from django.conf import settings
+
+from .constants import COLOR_MAX_LENGTH, NAME_MAX_LENGTH
 
 
 class Ingredient(models.Model):
     """Ingredient model."""
+
     name = models.CharField(max_length=NAME_MAX_LENGTH,
                             verbose_name='Ingredient')
     measurement_unit = models.CharField(max_length=NAME_MAX_LENGTH,
@@ -31,6 +32,7 @@ class Ingredient(models.Model):
 
 class Tag(models.Model):
     """Tag model."""
+
     name = models.CharField(max_length=NAME_MAX_LENGTH, verbose_name='Name',
                             unique=True)
     color = models.CharField(max_length=COLOR_MAX_LENGTH, unique=True,
@@ -48,6 +50,7 @@ class Tag(models.Model):
 
 class Recipe(models.Model):
     """Recipe model."""
+
     ingredients = models.ManyToManyField(
         Ingredient, through='RecipeIngredient',
         through_fields=('recipe', 'ingredient'),
@@ -94,6 +97,7 @@ class Recipe(models.Model):
 
 class RecipeIngredient(models.Model):
     """RecipeIngredient model."""
+
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE,
                                related_name='recipe_ingredient',
                                verbose_name='Recipe')
@@ -124,6 +128,7 @@ class RecipeIngredient(models.Model):
 
 class Favorite(models.Model):
     """Favorite model."""
+
     user = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE,
@@ -151,6 +156,7 @@ class Favorite(models.Model):
 
 class ShoppingCart(models.Model):
     """ShoppingCart model."""
+
     user = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE,

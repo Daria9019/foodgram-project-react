@@ -1,8 +1,6 @@
-from django_filters import FilterSet, NumberFilter, \
-    ModelMultipleChoiceFilter
+from django_filters import FilterSet, ModelMultipleChoiceFilter, NumberFilter
+from recipes.models import Ingredient, Recipe, Tag
 from rest_framework.filters import SearchFilter
-
-from recipes.models import Recipe, Ingredient, Tag
 
 
 class RecipeFilter(FilterSet):
@@ -34,6 +32,7 @@ class RecipeFilter(FilterSet):
 
 class IngredientFilter(SearchFilter):
     """Filter ingredient by name."""
+
     search_param = 'name'
 
     class Meta:

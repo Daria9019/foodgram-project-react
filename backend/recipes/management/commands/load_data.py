@@ -1,7 +1,7 @@
 import csv
 
-from django.core import management
-from foodgram import settings
+from django.conf import settings
+from django.core.management import BaseCommand
 from recipes.models import Ingredient, Tag
 
 MODELS_FILES = {
@@ -10,7 +10,7 @@ MODELS_FILES = {
 }
 
 
-class Command(management.BaseCommand):
+class Command(BaseCommand):
     def handle(self, *args, **options):
         for model, file in MODELS_FILES.items():
             with open(

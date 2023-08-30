@@ -2,18 +2,18 @@ import base64
 
 from django.contrib.auth.password_validation import validate_password
 from django.core.files.base import ContentFile
-from djoser.serializers import UserSerializer, UserCreateSerializer
+from djoser.serializers import UserCreateSerializer, UserSerializer
+from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
+                            ShoppingCart, Tag)
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.validators import UniqueTogetherValidator
-
-from recipes.models import Ingredient, RecipeIngredient, \
-    Tag, Recipe, ShoppingCart, Favorite
-from users.models import Follow, CustomUser
+from users.models import CustomUser, Follow
 
 
 class CustomUserCreateSerializer(UserCreateSerializer):
     """User сreate Serializer."""
+
     class Meta:
         model = CustomUser
         fields = (
@@ -37,6 +37,7 @@ class CustomUserCreateSerializer(UserCreateSerializer):
 
 class CustomUserSerializer(UserSerializer):
     """User Serializer."""
+
     is_subscribed = serializers.SerializerMethodField()
 
     class Meta:
@@ -61,6 +62,7 @@ class CustomUserSerializer(UserSerializer):
 
 class ChangePasswordSerializer(serializers.ModelSerializer):
     """Serializer for changing password."""
+
     current_password = serializers.CharField(required=True)
     new_password = serializers.CharField(required=True)
 
@@ -76,6 +78,7 @@ class ChangePasswordSerializer(serializers.ModelSerializer):
 
 class FollowSerializer(serializers.ModelSerializer):
     """Follow сreate Serializer."""
+
     is_subscribed = serializers.SerializerMethodField(read_only=True)
     recipes = serializers.SerializerMethodField(read_only=True)
     recipes_count = serializers.SerializerMethodField(read_only=True)
@@ -133,6 +136,7 @@ class FollowSerializer(serializers.ModelSerializer):
 
 class Base64ImageField(serializers.ImageField):
     """Convert ing to base64."""
+
     def to_internal_value(self, data):
         if isinstance(data, str) and data.startswith('data:image'):
             format, imgstr = data.split(';base64,')
@@ -145,6 +149,7 @@ class Base64ImageField(serializers.ImageField):
 
 class TagSerializer(serializers.ModelSerializer):
     """Tag serialize."""
+
     class Meta:
         model = Tag
         fields = (
@@ -157,6 +162,7 @@ class TagSerializer(serializers.ModelSerializer):
 
 class IngredientSerializer(serializers.ModelSerializer):
     """Ingredient Serializer."""
+
     class Meta:
         model = Ingredient
         fields = (
@@ -168,6 +174,7 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 class RecipeIngredientSerializer(serializers.ModelSerializer):
     """Add Ingredient Serializer."""
+
     id = serializers.PrimaryKeyRelatedField(
         queryset=Ingredient.objects.all()
     )
@@ -183,6 +190,7 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
 
 class RecipeSerializer(serializers.ModelSerializer):
     """Recipe Serializer."""
+
     ingredients = RecipeIngredientSerializer(
         many=True,
     )
@@ -255,6 +263,7 @@ class RecipeSerializer(serializers.ModelSerializer):
 
 class GetRecipeSerializer(serializers.ModelSerializer):
     """Recipe Serializer."""
+
     ingredients = RecipeIngredientSerializer(many=True,
                                              read_only=True,
                                              source='recipe_ingredient')
@@ -294,6 +303,7 @@ class GetRecipeSerializer(serializers.ModelSerializer):
 
 class FavoriteSerializer(serializers.ModelSerializer):
     """Favorite Serializer."""
+
     class Meta:
         model = Favorite
         fields = '__all__'
@@ -313,6 +323,7 @@ class FavoriteSerializer(serializers.ModelSerializer):
 
 class ShoppingCartSerializer(serializers.ModelSerializer):
     """Cart Serializer."""
+
     class Meta:
         model = ShoppingCart
         fields = '__all__'
@@ -332,6 +343,7 @@ class ShoppingCartSerializer(serializers.ModelSerializer):
 
 class RecipeInfoSerializer(serializers.ModelSerializer):
     """Info Serializer."""
+
     image = Base64ImageField()
 
     class Meta:
