@@ -53,14 +53,14 @@ class CustomUser(AbstractUser):
             )
         ]
 
+    def __str__(self):
+        return self.username
+
     def validate_username(self, value):
         """Validate the username."""
         if value == 'me':
             raise ValidationError('Error creating user with this name')
         return value
-
-    def __str__(self):
-        return self.username
 
 
 class Follow(models.Model):

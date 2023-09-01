@@ -77,11 +77,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def delete_obj(self, model, user, pk):
-        obj = model.objects.filter(user=user, recipe__id=pk)
-        try:
-            obj.delete()
+        entries = model.objects.filter(user=user, recipe__id=pk).delete()
+        if entries[0] == 1:
             return Response(status=status.HTTP_204_NO_CONTENT)
-        except obj.DoesNotExist:
+        else:
             return Response({'errors': 'You '
                                        'have already '
                                        'delete this recipe!'
@@ -109,11 +108,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
             'attachment; filename=shopping_cart.txt'
         )
 
-        self.make_txt(response, request.user)
+        response.write(self.generate_text_file(request.user))
 
         return response
 
-    def make_txt(self, response, request_user):
+    def generate_text_file(self, request_user):
         file = StringIO()
         file.write('Shopping list\n\n')
 
@@ -121,15 +120,15 @@ class RecipeViewSet(viewsets.ModelViewSet):
             recipe__shopping_cart__user=request_user).values_list(
             'ingredient__name', 'amount', 'ingredient__measurement_unit')
 
-        ingr_list = {}
+        ingredient_list = {}
         for name, amount, unit in ingredients:
-            if name not in ingr_list:
-                ingr_list[name] = {'amount': amount, 'unit': unit}
+            if name not in ingredient_list:
+                ingredient_list[name] = {'amount': amount, 'unit': unit}
             else:
-                ingr_list[name]['amount'] += amount
-        for i, (name, data) in enumerate(ingr_list.items(), start=1):
+                ingredient_list[name]['amount'] += amount
+        for i, (name, data) in enumerate(ingredient_list.items(), start=1):
             file.write(f"{i}. {name} – {data['amount']} {data['unit']}\n")
-        response.write(file.getvalue())
+        return file.getvalue()
 
 
 class CustomUserViewSet(UserViewSet):
@@ -200,10 +199,9 @@ class CustomUserViewSet(UserViewSet):
             )
             return Response(serializer.data)
         if request.method == 'DELETE':
-            subscription = get_object_or_404(Follow,
-                                             following=following,
-                                             follower=follower)
-            subscription.delete()
+            get_object_or_404(Follow,
+                              following=following,
+                              follower=follower).delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, methods=['get'])
