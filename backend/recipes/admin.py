@@ -47,8 +47,9 @@ class FavoriteAdmin(admin.ModelAdmin):
     search_fields = ('user', 'recipe')
 
     def get_queryset(self, request):
-        return super(FavoriteAdmin, self).get_queryset(request).\
-            select_related('user', 'recipe')
+        return super(FavoriteAdmin,
+                     self).get_queryset(
+            request).select_related('user', 'recipe')
 
 
 @admin.register(ShoppingCart)
@@ -58,5 +59,6 @@ class ShoppingCartAdmin(admin.ModelAdmin):
     search_fields = ('user', )
 
     def get_queryset(self, request):
-        return super(ShoppingCartAdmin, self).get_queryset(request).\
-            select_related('user', 'recipe')
+        return super(ShoppingCartAdmin,
+                     self).get_queryset(
+            request).select_related('user', 'recipe')

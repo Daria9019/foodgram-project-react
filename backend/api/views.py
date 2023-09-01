@@ -6,7 +6,6 @@ from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
 from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
                             ShoppingCart, Tag)
-
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import SAFE_METHODS, AllowAny, IsAuthenticated
@@ -80,12 +79,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
         entries = model.objects.filter(user=user, recipe__id=pk).delete()
         if entries[0] == 1:
             return Response(status=status.HTTP_204_NO_CONTENT)
-        else:
-            return Response({'errors': 'You '
-                                       'have already '
-                                       'delete this recipe!'
-                             },
-                            status=status.HTTP_400_BAD_REQUEST)
+        return Response({'errors': 'You '
+                                   'have already '
+                                   'delete this recipe!'
+                         },
+                        status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True, methods=['post', 'delete'],
             permission_classes=[IsAuthenticated])
@@ -199,10 +197,18 @@ class CustomUserViewSet(UserViewSet):
             )
             return Response(serializer.data)
         if request.method == 'DELETE':
-            get_object_or_404(Follow,
-                              following=following,
-                              follower=follower).delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+            entries = Follow.objects.filter(
+                following=following,
+                follower=follower).delete()
+            if entries[0] == 1:
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            return Response({'errors': 'You '
+                                       'are not '
+                                       'subscribed '
+                                       'to this '
+                                       'author!'
+                             },
+                            status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['get'])
     def subscriptions(self, request):
