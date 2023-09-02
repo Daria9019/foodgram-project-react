@@ -81,7 +81,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response({'errors': 'You '
                                    'have already '
-                                   'delete this recipe!'
+                                   'deleted this recipe!'
                          },
                         status=status.HTTP_400_BAD_REQUEST)
 
@@ -151,8 +151,7 @@ class CustomUserViewSet(UserViewSet):
             user.set_password(serializer.validated_data['new_password'])
             user.save()
             return Response({'status': 'password set'})
-        else:
-            return Response(serializer.errors,
+        return Response(serializer.errors,
                             status=status.HTTP_400_BAD_REQUEST)
 
     @action(
