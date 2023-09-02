@@ -151,8 +151,7 @@ class CustomUserViewSet(UserViewSet):
             user.set_password(serializer.validated_data['new_password'])
             user.save()
             return Response({'status': 'password set'})
-        return Response(serializer.errors,
-                            status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @action(
         detail=False,
