@@ -2,10 +2,12 @@ from io import StringIO
 
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
+
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
-from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
-                            ShoppingCart, Tag)
+from recipes.models import (
+    Favorite, Ingredient, Recipe, RecipeIngredient, ShoppingCart, Tag,
+)
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import SAFE_METHODS, AllowAny, IsAuthenticated
@@ -15,11 +17,11 @@ from users.models import CustomUser, Follow
 from .filters import IngredientFilter, RecipeFilter
 from .paginations import LimitPagination
 from .permissions import IsAuthorOrReadOnly
-from .serializers import (ChangePasswordSerializer, CustomUserCreateSerializer,
-                          CustomUserSerializer, FollowSerializer,
-                          GetRecipeSerializer, IngredientSerializer,
-                          RecipeInfoSerializer, RecipeSerializer,
-                          TagSerializer)
+from .serializers import (
+    ChangePasswordSerializer, CustomUserCreateSerializer, CustomUserSerializer,
+    FollowSerializer, GetRecipeSerializer, IngredientSerializer,
+    RecipeInfoSerializer, RecipeSerializer, TagSerializer,
+)
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
@@ -81,7 +83,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response({'errors': 'You '
                                    'have already '
-                                   'deleted this recipe!'
+                                   'delete this recipe!'
                          },
                         status=status.HTTP_400_BAD_REQUEST)
 
@@ -151,7 +153,9 @@ class CustomUserViewSet(UserViewSet):
             user.set_password(serializer.validated_data['new_password'])
             user.save()
             return Response({'status': 'password set'})
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(serializer.errors,
+                            status=status.HTTP_400_BAD_REQUEST)
 
     @action(
         detail=False,
@@ -202,8 +206,8 @@ class CustomUserViewSet(UserViewSet):
                 return Response(status=status.HTTP_204_NO_CONTENT)
             return Response({'errors': 'You '
                                        'are not '
-                                       'subscribed '
-                                       'to this '
+                                       'subscribed on'
+                                       'this '
                                        'author!'
                              },
                             status=status.HTTP_400_BAD_REQUEST)
