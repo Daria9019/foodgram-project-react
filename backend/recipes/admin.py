@@ -24,7 +24,7 @@ class RecipeIngredientInline(admin.TabularInline):
 class RecipeAdmin(admin.ModelAdmin):
     list_display = ('name', 'author', 'favorites_number')
     search_fields = ['name', 'author__username']
-    list_filter = ['tags']
+    list_filter = ['tags', 'author']
     inlines = (RecipeIngredientInline, )
 
     def display_tags(self, obj):
@@ -44,7 +44,7 @@ class RecipeAdmin(admin.ModelAdmin):
 class FavoriteAdmin(admin.ModelAdmin):
     list_display = ('user', 'recipe')
     list_filter = ('user', 'recipe')
-    search_fields = ('user', 'recipe')
+    search_fields = ('user__username', 'recipe__name')
 
     def get_queryset(self, request):
         return super(FavoriteAdmin,
@@ -56,7 +56,7 @@ class FavoriteAdmin(admin.ModelAdmin):
 class ShoppingCartAdmin(admin.ModelAdmin):
     list_display = ('recipe', 'user')
     list_filter = ('recipe', 'user')
-    search_fields = ('user', )
+    search_fields = ('user__username', )
 
     def get_queryset(self, request):
         return super(ShoppingCartAdmin,

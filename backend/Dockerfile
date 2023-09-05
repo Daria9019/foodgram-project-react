@@ -10,4 +10,8 @@ RUN pip install -r requirements.txt --no-cache-dir
 
 COPY . .
 
-CMD ["gunicorn", "--bind", "0.0.0.0:6000", "foodgram.wsgi:application"]
+COPY enrtypoint.sh /entrypoint.sh
+
+RUN chmod +x /enrtypoint.sh
+
+ENTRYPOINT ["/enrtypoint.sh"]

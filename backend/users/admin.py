@@ -20,7 +20,7 @@ class FollowAdmin(admin.ModelAdmin):
         'following',
         'follower',
     )
-    search_fields = ('follower',)
+    search_fields = ('follower__username',)
 
     def get_queryset(self, request):
         return super(FollowAdmin, self).get_queryset(

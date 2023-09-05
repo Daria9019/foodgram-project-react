@@ -1,33 +1,34 @@
+from rest_framework.exceptions import ValidationError
+
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from recipes.constants import EMAIL_MAX_LENGTH, NAME_MAX_LENGTH
-from rest_framework.exceptions import ValidationError
 
 
 class CustomUser(AbstractUser):
     """CustomUser model."""
 
-    email = models.EmailField(_('email'),
+    email = models.EmailField(_('Email'),
                               max_length=EMAIL_MAX_LENGTH, unique=True)
     username = models.CharField(
-        verbose_name='username',
+        verbose_name='Username',
         max_length=NAME_MAX_LENGTH,
         unique=True,
         validators=(UnicodeUsernameValidator(), ),
     )
     first_name = models.CharField(
-        verbose_name='Name',
+        verbose_name='Имя',
         max_length=NAME_MAX_LENGTH,
     )
     last_name = models.CharField(
-        verbose_name='Last Name',
+        verbose_name='Фамилия',
         max_length=NAME_MAX_LENGTH,
     )
     password = models.CharField(
-        verbose_name='Password',
+        verbose_name='Пароль',
         max_length=NAME_MAX_LENGTH,
     )
     USERNAME_FIELD = 'email'
@@ -45,8 +46,8 @@ class CustomUser(AbstractUser):
 
     class Meta:
         ordering = ['username']
-        verbose_name = 'User'
-        verbose_name_plural = 'Users'
+        verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'
         constraints = [
             models.UniqueConstraint(
                 fields=('username', 'email'),
@@ -60,7 +61,7 @@ class CustomUser(AbstractUser):
     def validate_username(self, value):
         """Validate the username."""
         if value == 'me':
-            raise ValidationError('Error creating user with this name')
+            raise ValidationError('Пользователь с таким именем уже существует!')
         return value
 
 
@@ -76,8 +77,8 @@ class Follow(models.Model):
 
     class Meta:
         ordering = ['follower']
-        verbose_name = 'Subscription'
-        verbose_name_plural = 'Subscriptions'
+        verbose_name = 'Подписка'
+        verbose_name_plural = 'Подписки'
         constraints = [
             models.UniqueConstraint(
                 fields=['follower', 'following'],
