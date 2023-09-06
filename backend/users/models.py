@@ -61,9 +61,7 @@ class CustomUser(AbstractUser):
     def validate_username(self, value):
         """Validate the username."""
         if value == 'me':
-            raise ValidationError(
-                'Пользователь с таким именем уже существует!'
-            )
+            raise ValidationError('Пользователь с таким именем уже существует!')
         return value
 
 

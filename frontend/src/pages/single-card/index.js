@@ -83,7 +83,7 @@ const SingleCard = ({ loadItem, updateOrders }) => {
                   className={styles['single-card__link']}
                 />
               </div>
-              {(userContext || {}).id === author.id && <LinkComponent
+              {(userContext[0] || {}).id === author.id && <LinkComponent
                 href={`${url}/edit`}
                 title='Редактировать рецепт'
                 className={styles['single-card__edit']}
@@ -101,7 +101,7 @@ const SingleCard = ({ loadItem, updateOrders }) => {
               
             {is_in_shopping_cart ? <><Icons.DoneIcon color="#4A61DD"/>Рецепт добавлен</> : <><Icons.PlusIcon /> Добавить в покупки</>}
             </Button>}
-            {(userContext || {}).id !== author.id && authContext && <Button
+            {(userContext[0] || {}).id !== author.id && authContext && <Button
               className={styles['single-card__button']}
               modifier='style_light-blue'
               clickHandler={_ => {
