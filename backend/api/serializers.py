@@ -175,12 +175,21 @@ class IngredientSerializer(serializers.ModelSerializer):
         )
 
 
+class AddIngredientRecipeSerializer(serializers.ModelSerializer):
+    """Add Ingredient Serializer."""
+
+    id = serializers.IntegerField()
+    amount = serializers.IntegerField()
+
+    class Meta:
+        model = RecipeIngredient
+        fields = ['id', 'amount']
+
+
 class RecipeIngredientSerializer(serializers.ModelSerializer):
     """Add Ingredient Serializer."""
 
-    id = serializers.PrimaryKeyRelatedField(
-        queryset=Ingredient.objects.all()
-    )
+    id = serializers.ReadOnlyField(source='ingredient.id')
     name = serializers.ReadOnlyField(source='ingredient.name')
     measurement_unit = serializers.ReadOnlyField(
         source='ingredient.measurement_unit'
@@ -194,14 +203,10 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
 class RecipeSerializer(serializers.ModelSerializer):
     """Recipe Serializer."""
 
-    ingredients = RecipeIngredientSerializer(
+    ingredients = AddIngredientRecipeSerializer(
         many=True,
     )
-    tags = serializers.PrimaryKeyRelatedField(
-        many=True,
-        queryset=Tag.objects.all(),
-        error_messages={'does_not_exist': 'Tag does not exist!'}
-    )
+    tags = TagSerializer(many=True, read_only=True)
     image = Base64ImageField(max_length=None)
     author = CustomUserSerializer(read_only=True)
     cooking_time = serializers.IntegerField(min_value=1)
@@ -219,33 +224,37 @@ class RecipeSerializer(serializers.ModelSerializer):
             'id'
         )
 
-    def get_ingredients(self, recipe, ingredients):
-        ingredient_list = [
-            RecipeIngredient(
-                ingredient=ingredient_data.pop('id'),
-                amount=ingredient_data.pop('amount'),
+    def create_ingredients(self, ingredients, recipe):
+        for ingredient in ingredients:
+            RecipeIngredient.objects.create(
                 recipe=recipe,
+                ingredient_id=ingredient.get('id'),
+                amount=ingredient.get('amount'),
             )
-            for ingredient_data in ingredients
-        ]
-        RecipeIngredient.objects.bulk_create(ingredient_list)
 
     def create(self, validated_data):
-        ingredients = validated_data.pop('ingredients')
-        tags_data = validated_data.pop('tags')
-        recipe = Recipe.objects.create(**validated_data)
+        image = validated_data.pop('image')
+        ingredients_data = validated_data.pop('ingredients')
+        recipe = Recipe.objects.create(image=image, **validated_data)
+        print(validated_data)
+        tags_data = self.initial_data.get('tags')
         recipe.tags.set(tags_data)
-        self.get_ingredients(recipe, ingredients)
+        self.create_ingredients(ingredients_data, recipe)
         return recipe
 
     def update(self, instance, validated_data):
+        instance.image = validated_data.get('image', instance.image)
+        instance.name = validated_data.get('name', instance.name)
+        instance.text = validated_data.get('text', instance.text)
+        instance.cooking_time = validated_data.get(
+            'cooking_time', instance.cooking_time
+        )
         instance.tags.clear()
-        tags = validated_data.pop('tags')
-        instance.tags.set(tags)
-        instance.ingredients.clear()
-        ingredients = validated_data.pop('ingredients')
-        instance.ingredients.clear()
-        self.get_ingredients(instance, ingredients)
+        tags_data = self.initial_data.get('tags')
+        instance.tags.set(tags_data)
+        RecipeIngredient.objects.filter(recipe=instance).all().delete()
+        print(validated_data)
+        self.create_ingredients(validated_data.get('ingredients'), instance)
         instance.save()
         return instance
 
